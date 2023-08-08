@@ -18,6 +18,24 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.cpf} | {self.first_name}"
     
+    def user_type(self):
+        user_type = None
+        try:
+            bol = self.coordenador is not None
+            user_type = 'coordenador'
+        except:
+            try:
+                bol = self.professor is not None
+                user_type = 'professor'
+            except:
+                try:
+                    bol = self.aluno is not None
+                    user_type = 'aluno'
+                except:
+                    user_type = 'staff'
+        return user_type
+
+    
 class Coordenador(models.Model):
     user = models.OneToOneField(
         User,

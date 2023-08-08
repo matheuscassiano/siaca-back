@@ -8,7 +8,7 @@ from rest_framework.response import Response
 def home(request):
     print('Bem vindo!')
     if request.user.is_authenticated:
-        # Retorna uma mensagem específica para usuários autenticados
+        print(request.user.user_type())
         return Response({'message': 'Você está autenticado. Acesso autorizado.'})
     else:
         # Retorna uma mensagem para usuários não autenticados

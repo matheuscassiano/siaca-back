@@ -2,11 +2,12 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework.response import Response
 from autenticacao.models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, UserUpdateSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from autenticacao.permissions import CanUpdateUserData, CanCreateUser
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, CanCreateUser])
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -16,12 +17,12 @@ class CreateUserView(generics.CreateAPIView):
         response.data['message'] = 'Usuário criado com sucesso.'
         return response
     
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, CanUpdateUserData])
 class UpdateDeleteUserView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = UserUpdateSerializer
     lookup_field = 'id'
-
+    
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
         response.data['message'] = 'Usuário atualizado com sucesso.'
