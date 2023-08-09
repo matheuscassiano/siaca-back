@@ -157,3 +157,6 @@ env/
 
 # Migrations
 *migrations/
+
+# Credentials
+*credentials.py

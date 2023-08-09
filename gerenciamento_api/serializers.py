@@ -45,3 +45,8 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'cidade': {'required': False},  # Torna o campo 'cidade' opcional
             'estado': {'required': False},  # Torna o campo 'estado' opcional
         }
+
+class ChangePasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True)
+    confirm_new_password = serializers.CharField(write_only=True)

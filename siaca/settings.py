@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from .credentials import EMAIL_USER, EMAIL_PASSWORD
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -138,3 +139,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Auth user
 AUTH_USER_MODEL = 'autenticacao.User'  # Use o caminho correto para o modelo personalizado
+
+#  EMAIL SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'  # Servidor SMTP do provedor de email
+EMAIL_PORT = 587  # Porta do servidor SMTP (587 é a porta padrão para TLS)
+EMAIL_USE_TLS = True  # Use TLS para criptografia de conexão
+EMAIL_USE_SSL = False  # Use SSL para criptografia de conexão (deixe como False se estiver usando TLS)
+EMAIL_HOST_USER = EMAIL_USER  # Seu endereço de email
+EMAIL_HOST_PASSWORD = EMAIL_PASSWORD  # Sua senha de email
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Endereço de email padrão do remetente

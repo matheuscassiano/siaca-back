@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from rest_framework import generics
+from rest_framework import status
 from rest_framework.response import Response
 from autenticacao.models import User
-from .serializers import UserSerializer, UserUpdateSerializer
+from .serializers import UserSerializer, UserUpdateSerializer, ChangePasswordSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from autenticacao.permissions import CanUpdateUserData, CanCreateUser
@@ -33,3 +34,4 @@ class UpdateDeleteUserView(generics.RetrieveUpdateDestroyAPIView):
         if response.status_code == 204:
             return Response({'message': 'Usuário deletado com sucesso.'}, status=200)
         return response
+    
