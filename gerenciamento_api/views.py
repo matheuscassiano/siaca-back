@@ -2,11 +2,12 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
-from autenticacao.models import User, Curso
+from autenticacao.models import User
+from coordenacao.models import Curso
 from .serializers import UserSerializer, UserUpdateSerializer, ChangePasswordSerializer, CursoSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from autenticacao.permissions import CanUpdateUserData, CanCreateUser
+from autenticacao.permissions import CanUpdateUserData, CanCreateUser, CanCreateCurso, CanUpdateDeleteCurso
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 
@@ -38,7 +39,7 @@ class UpdateDeleteUserView(generics.RetrieveUpdateDestroyAPIView):
             return Response({'message': 'Usuário deletado com sucesso.'}, status=200)
         return response
     
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, CanCreateCurso])
 class CreateCursoView(generics.ListCreateAPIView):
     queryset = Curso.objects.all()
     serializer_class = CursoSerializer
@@ -48,7 +49,7 @@ class CreateCursoView(generics.ListCreateAPIView):
         response.data['message'] = 'Curso criado com sucesso.'
         return response
 
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated, CanUpdateDeleteCurso])
 class UpdateDeleteCursoView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Curso.objects.all()
     serializer_class = CursoSerializer

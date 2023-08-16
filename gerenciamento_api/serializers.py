@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from autenticacao.models import User, Coordenador, Professor, Aluno
-from coordenacao.models import Disciplina, Sala
+from coordenacao.models import Disciplina, Sala, Curso
 
 class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.ChoiceField(choices=[('coordenador', 'Coordenador'), ('professor', 'Professor'), ('aluno', 'Aluno')])
@@ -60,4 +60,9 @@ class DisciplinaSerializer(serializers.ModelSerializer):
 class SalaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sala
+        fields = '__all__'
+
+class CursoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Curso
         fields = '__all__'

@@ -1,7 +1,6 @@
 from django.urls import path
 from django.urls import path
-from .views import CreateUserView, UpdateDeleteUserView
-from .views import CreateCursoView, UpdateDeleteCursoView
+from .views import CreateUserView, UpdateDeleteUserView,  CreateCursoView, UpdateDeleteCursoView
 
 urlpatterns = [
     path('usuario/', CreateUserView.as_view(), name='criar_usuario'),
