@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.urls import reverse
 from django.utils.translation import gettext as _
+from coordenacao.models import Curso
 
 class User(AbstractUser):
     cpf = models.CharField(max_length=11, unique=True)
@@ -42,7 +43,7 @@ class Coordenador(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    
+    curso = models.ForeignKey(Curso, on_delete=models.DO_NOTHING, null=True, blank=True)
     class Meta:
         verbose_name = _("coordenador")
         verbose_name_plural = _("coordenadores")

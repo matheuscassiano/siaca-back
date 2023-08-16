@@ -16,3 +16,18 @@ class CanUpdateUserData(permissions.BasePermission):
             or request.user.user_type() == 'staff'
             or request.user.pk == obj.pk
         )
+
+class IsCoordenadorCurso(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.user.user_type() == 'coordenador':
+            curso_id = int(request.data.get('curso'))
+            if curso_id:
+                # Verificar se o usuário logado é coordenador do curso
+                # ao qual a disciplina está sendo associada
+                return request.user.coordenador.curso.id == curso_id
+        return False
+    
+class IsStaff(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Verifica se user logado é Staff
+        return (request.user.user_type() == 'staff')

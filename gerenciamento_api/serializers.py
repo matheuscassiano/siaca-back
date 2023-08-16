@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from autenticacao.models import User, Coordenador, Professor, Aluno
+from coordenacao.models import Disciplina, Sala
 
 class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.ChoiceField(choices=[('coordenador', 'Coordenador'), ('professor', 'Professor'), ('aluno', 'Aluno')])
@@ -50,3 +51,13 @@ class ChangePasswordSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     new_password = serializers.CharField(write_only=True)
     confirm_new_password = serializers.CharField(write_only=True)
+
+class DisciplinaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Disciplina
+        fields = '__all__'
+
+class SalaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sala
+        fields = '__all__'
