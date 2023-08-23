@@ -44,6 +44,13 @@ python manage.py runserver
 
 A API estará disponível em `http://localhost:8000/`.
 
+8. Credenciais de EMAIL:
+É necessário criar um arquivo ```credentials.py``` na pasta siaca, com as constantes EMAIL_USER e EMAIL_PASSWORD (uma senha de app deve ser utilizada)
+![image](https://github.com/matheuscassiano/siaca-back/assets/9613261/7364a84a-a64d-41d6-8095-e6859c4f9b50)
+
+
+
+
 ## Responsáveis
 **Marcus Vinicius Gomes Pestana**
 
