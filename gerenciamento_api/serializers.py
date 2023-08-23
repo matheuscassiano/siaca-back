@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from autenticacao.models import User, Coordenador, Professor, Aluno
-from coordenacao.models import Disciplina, Sala, Curso
+from coordenacao.models import Disciplina, Sala, Curso, Periodo
 
 class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.ChoiceField(choices=[('coordenador', 'Coordenador'), ('professor', 'Professor'), ('aluno', 'Aluno')])
@@ -66,3 +66,44 @@ class CursoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Curso
         fields = '__all__'
+
+
+class PeriodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Periodo
+        fields = ['id', 'start_date', 'end_date']
+        extra_kwargs = {
+            'start_date': {'required': False},  # Torna o campo 'start_date' opcional
+            'end_date': {'required': False},  # Torna o campo 'end_date' opcional
+        }
+
+    def create(self, validated_data):        
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):        
+        return super().update(instance, validated_data)
+
+class PeriodoUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Periodo
+        fields = ['id', 'start_date', 'end_date']
+        extra_kwargs = {
+            'start_date': {'required': False},  # Torna o campo 'start_date' opcional
+            'end_date': {'required': False},  # Torna o campo 'end_date' opcional
+        }
+
+    def update(self, instance, validated_data):
+        return super().update(instance, validated_data)
+
+class PeriodoViewSet(viewsets.ModelViewSet):
+    queryset = Periodo.objects.all()
+    serializer_class = PeriodoSerializer
+
+router = DefaultRouter()
+router.register(r'periodos', PeriodoViewSet)
+
+##url - entrar no arquivo url
+urlpatterns = [
+    path('periodo/', CreatePeriodoView.as_view(), name='criar_periodo'),
+    path('periodo/<int:id>/', UpdateDeletePeriodoView.as_view(), name='atualizar_deletar_periodo'),
+]

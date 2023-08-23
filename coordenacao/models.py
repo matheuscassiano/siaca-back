@@ -55,3 +55,15 @@ class Disciplina(models.Model):
 
     def get_absolute_url(self):
         return reverse("disciplina_detail", kwargs={"pk": self.pk})
+    
+class Periodo(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    start_date = models.DateField(null=False)
+    end_date = models.DateField(null=False)
+
+    class Meta:
+        verbose_name = _("periodo")
+        verbose_name_plural = _("periodos")
+
+    def __str__(self):
+        return f"{self.pk[0:-1]}.{self.pk[-1]}"
