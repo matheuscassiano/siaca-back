@@ -100,15 +100,15 @@ class PeriodoUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
-class PeriodoViewSet(viewsets.ModelViewSet):
-    queryset = Periodo.objects.all()
-    serializer_class = PeriodoSerializer
+# class PeriodoViewSet(viewsets.ModelViewSet):
+#     queryset = Periodo.objects.all()
+#     serializer_class = PeriodoSerializer
 
-router = DefaultRouter()
-router.register(r'periodos', PeriodoViewSet)
+# router = DefaultRouter()
+# router.register(r'periodos', PeriodoViewSet)
 
-##url - entrar no arquivo url
-urlpatterns = [
-    path('periodo/', CreatePeriodoView.as_view(), name='criar_periodo'),
-    path('periodo/<int:id>/', UpdateDeletePeriodoView.as_view(), name='atualizar_deletar_periodo'),
-]
+# ##url - entrar no arquivo url
+# urlpatterns = [
+#     path('periodo/', CreatePeriodoView.as_view(), name='criar_periodo'),
+#     path('periodo/<int:id>/', UpdateDeletePeriodoView.as_view(), name='atualizar_deletar_periodo'),
+# ]

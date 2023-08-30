@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from gerenciamento_api.serializers import DisciplinaSerializer, SalaSerializer, CursoSerializer
+from gerenciamento_api.serializers import DisciplinaSerializer, SalaSerializer, CursoSerializer, PeriodoSerializer, PeriodoUpdateSerializer
 from autenticacao.permissions import IsCoordenadorCurso, IsStaff, CanCreateCurso, CanUpdateDeleteCurso
 from .models import Disciplina, Sala, Curso, Periodo
 
