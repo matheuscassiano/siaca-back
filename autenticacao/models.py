@@ -11,6 +11,7 @@ class User(AbstractUser):
     bairro = models.CharField(max_length=50)
     cidade = models.CharField(max_length=50)
     estado = models.CharField(max_length=50)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = _("user")
