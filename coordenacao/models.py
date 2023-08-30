@@ -56,8 +56,20 @@ class Disciplina(models.Model):
     def get_absolute_url(self):
         return reverse("disciplina_detail", kwargs={"pk": self.pk})
     
+class Periodo(models.Model):
+    id = models.CharField(max_length=50, primary_key=True)
+    start_date = models.DateField(null=False)
+    end_date = models.DateField(null=False)
+
+    class Meta:
+        verbose_name = _("periodo")
+        verbose_name_plural = _("periodos")
+
+    def __str__(self):
+        return f"{self.pk[0:-1]}.{self.pk[-1]}"
+    
 class Oferta(models.Model):
-    # periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, null=False, blank=False)
+    periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, null=False, blank=False)
     disciplina = models.ForeignKey(Disciplina, on_delete=models.DO_NOTHING, null=False, blank=False)
     # professor = models.ForeignKey(swappable_dependency('autenticacao.Professor'), on_delete=models.DO_NOTHING, null=True, blank=True)
     sala = models.ForeignKey(Sala, on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -79,14 +91,4 @@ class Oferta(models.Model):
 
     def get_absolute_url(self):
         return reverse("oferta_detail", kwargs={"pk": self.pk})
-class Periodo(models.Model):
-    id = models.CharField(max_length=50, primary_key=True)
-    start_date = models.DateField(null=False)
-    end_date = models.DateField(null=False)
 
-    class Meta:
-        verbose_name = _("periodo")
-        verbose_name_plural = _("periodos")
-
-    def __str__(self):
-        return f"{self.pk[0:-1]}.{self.pk[-1]}"

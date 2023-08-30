@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from autenticacao.models import User, Coordenador, Professor, Aluno
-from coordenacao.models import Disciplina, Sala, Curso, Periodo
+from coordenacao.models import Disciplina, Sala, Curso, Periodo, Oferta
 
 class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.ChoiceField(choices=[('coordenador', 'Coordenador'), ('professor', 'Professor'), ('aluno', 'Aluno')])
@@ -100,6 +100,10 @@ class PeriodoUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         return super().update(instance, validated_data)
 
+class OfertaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Oferta
+        fields = '__all__'
 # class PeriodoViewSet(viewsets.ModelViewSet):
 #     queryset = Periodo.objects.all()
 #     serializer_class = PeriodoSerializer
