@@ -4,9 +4,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from gerenciamento_api.serializers import DisciplinaSerializer, SalaSerializer
-from autenticacao.permissions import IsCoordenadorCurso, IsStaff
-from .models import Disciplina, Sala
+from gerenciamento_api.serializers import DisciplinaSerializer, SalaSerializer, CursoSerializer
+from autenticacao.permissions import IsCoordenadorCurso, IsStaff, CanCreateCurso, CanUpdateDeleteCurso
+from .models import Disciplina, Sala, Curso, Periodo
 
 
 @permission_classes([IsAuthenticated, IsCoordenadorCurso])
@@ -28,3 +28,57 @@ class SalaCreateView(generics.CreateAPIView):
 class SalaUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
+
+@permission_classes([IsAuthenticated, CanCreateCurso])
+class CreateCursoView(generics.ListCreateAPIView):
+    queryset = Curso.objects.all()
+    serializer_class = CursoSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        response.data['message'] = 'Curso criado com sucesso.'
+        return response
+
+@permission_classes([IsAuthenticated, CanUpdateDeleteCurso])
+class UpdateDeleteCursoView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Curso.objects.all()
+    serializer_class = CursoSerializer
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        response.data['message'] = 'Curso atualizado com sucesso.'
+        return response
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        if response.status_code == 204:
+            return Response({'message': 'Curso deletado com sucesso.'}, status=200)
+        return response
+  
+@permission_classes([IsAuthenticated])
+class CreatePeriodoView(generics.ListCreateAPIView):
+    queryset = Periodo.objects.all()
+    serializer_class = PeriodoSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        response.data['message'] = 'Periodo criado com sucesso.'
+        return response
+
+@permission_classes([IsAuthenticated])
+class UpdateDeletePeriodoView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Periodo.objects.all()
+    serializer_class = PeriodoSerializer
+    lookup_field = 'id'
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        response.data['message'] = 'Periodo atualizado com sucesso.'
+        return response
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        if response.status_code == 204:
+            return Response({'message': 'Periodo deletado com sucesso.'}, status=200)
+        return response
