@@ -8,7 +8,7 @@ from .serializers import UserSerializer, UserUpdateSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from autenticacao.permissions import CanUpdateUserData, CanCreateUser
-from rest_framework.decorators import permission_classes
+from rest_framework.decorators import permission_classes, action
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -38,3 +38,10 @@ class UpdateDeleteUserView(generics.RetrieveUpdateDestroyAPIView):
         if response.status_code == 204:
             return Response({'message': 'Usuário deletado com sucesso.'}, status=200)
         return response
+    
+    @action(detail=True, methods=['post'])
+    def toggle_active(self, request, *args, **kwargs):
+        user = self.get_object()
+        user.is_active = not user.is_active
+        user.save()
+        return Response({'message': f'Usuário {"ativado" if user.is_active else "desativado"} com sucesso.'})

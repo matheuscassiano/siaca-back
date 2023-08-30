@@ -6,7 +6,7 @@ class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.ChoiceField(choices=[('coordenador', 'Coordenador'), ('professor', 'Professor'), ('aluno', 'Aluno')])
     class Meta:
         model = User
-        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'cpf', 'telefone', 'endereco', 'bairro', 'cidade', 'estado', 'user_type']
+        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'cpf', 'telefone', 'endereco', 'bairro', 'cidade', 'estado', 'user_type', 'is_active']
         extra_kwargs = {
             'password': {'write_only': True},  # A senha será tratada apenas na criação
             'first_name': {'required': False},  # Torna o campo 'first_name' opcional
@@ -16,6 +16,7 @@ class UserSerializer(serializers.ModelSerializer):
             'bairro': {'required': False},  # Torna o campo 'bairro' opcional
             'cidade': {'required': False},  # Torna o campo 'cidade' opcional
             'estado': {'required': False},  # Torna o campo 'estado' opcional
+            'is_active': {'required': False},  # Torna o campo 'is_active' opcional
         }
 
     def create(self, validated_data):
@@ -35,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'first_name', 'last_name', 'email', 'telefone', 'endereco', 'bairro', 'cidade', 'estado']
+        fields = ['id', 'first_name', 'last_name', 'email', 'telefone', 'endereco', 'bairro', 'cidade', 'estado', 'is_active']
         extra_kwargs = {
             'first_name': {'required': False},  # Torna o campo 'first_name' opcional
             'last_name': {'required': False},  # Torna o campo 'last_name' opcional
@@ -45,7 +46,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             'bairro': {'required': False},  # Torna o campo 'bairro' opcional
             'cidade': {'required': False},  # Torna o campo 'cidade' opcional
             'estado': {'required': False},  # Torna o campo 'estado' opcional
+            'is_active': {'required': False},  # Torna o campo 'is_active' opcional
         }
+
+        def update(self, instance, validated_data):        
+            return super().update(instance, validated_data)
 
 class ChangePasswordSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
