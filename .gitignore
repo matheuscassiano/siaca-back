@@ -155,8 +155,5 @@ cython_debug/
 env/
 .vscode/
 
-# Migrations
-*migrations/
-
 # Credentials
 *credentials.py
