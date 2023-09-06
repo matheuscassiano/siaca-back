@@ -149,3 +149,17 @@ class OfertaUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
                 return False
 
         return True
+    
+@permission_classes([IsAuthenticated, CanCreateCurso])
+class SalaListView(generics.ListAPIView):
+    queryset = Sala.objects.all()
+    serializer_class = SalaSerializer
+
+@permission_classes([IsAuthenticated, CanCreateCurso])
+class DisciplinaListView(generics.ListAPIView):
+    queryset = Disciplina.objects.all()
+    serializer_class = DisciplinaSerializer
+    
+    def get_queryset(self):
+        # Filtra as disciplinas pelo curso do coordenador
+        return Disciplina.objects.filter(curso=self.request.user.coordenador.curso)
