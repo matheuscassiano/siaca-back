@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 from .credentials import EMAIL_USER, EMAIL_PASSWORD
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,19 +33,19 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'autenticacao',
+    'coordenacao',
+    'gerenciamento_api',
+    'rest_framework',
+    'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework_simplejwt',
     # 'django.contrib.staticfiles',  # required for serving swagger ui's css/js files
-    'drf_yasg',
-    'autenticacao',
-    'coordenacao',
-    'gerenciamento_api'
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [
@@ -115,6 +116,21 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASS': (         
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_SCHEMA_CLASS': (
+        'rest_framework.schemas.coreapi.AutoSchema',
+    )
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),  # Adjust as needed
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),  # Adjust as needed
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=1),  # Adjust as needed
+    'SLIDING_TOKEN_REFRESH_GRACE_PERIOD': timedelta(days=2),  # Adjust as needed
+    'SLIDING_TOKEN_REFRESH_EASIER': False,
+    'SLIDING_TOKEN_REFRESH_ALMOST_EXPIRED': False,
 }
 
 
@@ -153,6 +169,3 @@ EMAIL_USE_SSL = False  # Use SSL para criptografia de conexão (deixe como False
 EMAIL_HOST_USER = EMAIL_USER  # Seu endereço de email
 EMAIL_HOST_PASSWORD = EMAIL_PASSWORD  # Sua senha de email
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Endereço de email padrão do remetente
-
-# Swagger
-REST_FRAMEWORK = { 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema' }

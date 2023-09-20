@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import generics
 from gerenciamento_api.serializers import ChangePasswordSerializer
 
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.views import APIView
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -16,10 +17,9 @@ from .models import User
 from .utilities import pass_change_email
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def home(request):
     print('Bem vindo!')
+    print(request.user)
     if request.user.is_authenticated:
         print(request.user.user_type())
         return Response({'message': 'Você está autenticado. Acesso autorizado.'})
@@ -31,7 +31,6 @@ def home(request):
 @permission_classes([IsAuthenticated])
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
-    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
