@@ -134,6 +134,11 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+
+    'DEFAULT_SCHEMA_CLASS': (
+        'rest_framework.schemas.coreapi.AutoSchema',
+    )
+      
 }
 
 
@@ -172,6 +177,3 @@ EMAIL_USE_SSL = False  # Use SSL para criptografia de conexão (deixe como False
 EMAIL_HOST_USER = EMAIL_USER  # Seu endereço de email
 EMAIL_HOST_PASSWORD = EMAIL_PASSWORD  # Sua senha de email
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Endereço de email padrão do remetente
-
-# Swagger
-REST_FRAMEWORK = { 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema' }
