@@ -1,4 +1,4 @@
-from .views import OfertaCreateView, OfertaUpdateDeleteView, MatriculaCreateView, MatriculaListView
+from .views import OfertaCreateView, OfertaUpdateDeleteView, MatriculaCreateView, MatriculaListView, MyMatriculaListView
 from django.urls import path
 
 urlpatterns = [
@@ -7,4 +7,5 @@ urlpatterns = [
 
     path('matriculas/', MatriculaCreateView.as_view(), name='matricula-create'),
     path('list-matriculas/', MatriculaListView.as_view(), name='matricula-list'),
+    path('minhas-matriculas/', MyMatriculaListView.as_view(), name='alunos-matricula-list'),
 ]

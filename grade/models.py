@@ -28,9 +28,13 @@ class Oferta(models.Model):
     def get_absolute_url(self):
         return reverse("oferta_detail", kwargs={"pk": self.pk})
     
-    def matriculas_relacionadas(self):
+    def qtd_matriculas_relacionadas(self):
         matriculas_count = Matricula.objects.filter(oferta=self).count()
         return matriculas_count
+
+    def matriculas_relacionadas(self):
+        matriculas = Matricula.objects.filter(oferta=self)
+        return matriculas
 
 class Matricula(models.Model):
     oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE)

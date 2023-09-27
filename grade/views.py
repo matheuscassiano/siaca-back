@@ -71,7 +71,7 @@ class MatriculaCreateView(generics.CreateAPIView):
         try:
             oferta = Oferta.objects.get(pk=oferta_id)
             aluno = request.user.aluno
-            qtd_matriculados = oferta.matriculas_relacionadas()
+            qtd_matriculados = oferta.qtd_matriculas_relacionadas()
             lugares_disponiveis = oferta.sala.lugares - qtd_matriculados
             
             if oferta.disciplina.curso == aluno.curso:
@@ -90,5 +90,30 @@ class MatriculaCreateView(generics.CreateAPIView):
 
 @permission_classes([IsAuthenticated, IsOfertaFromCoordenadorCurso])
 class MatriculaListView(generics.ListAPIView):
-    queryset = Matricula.objects.all()
     serializer_class = MatriculaSerializer
+
+    def get_queryset(self):
+        oferta_id = self.request.query_params.get('oferta')
+        print(oferta_id)
+        if oferta_id:
+            return Matricula.objects.filter(oferta__pk=oferta_id)
+        return Matricula.objects.none()  # Ou retorne a queryset desejada caso não seja necessário filtrar
+
+    def get(self, request, *args, **kwargs):
+        matriculas = self.get_queryset()
+        if matriculas.exists():
+            return Response(MatriculaSerializer(matriculas, many=True).data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "Oferta não tem matriculas."}, status=status.HTTP_404_NOT_FOUND)
+
+@permission_classes([IsAuthenticated, IsAluno])
+class MyMatriculaListView(generics.ListAPIView):
+    queryset = Matricula.objects.all()
+
+    def get_queryset(self):
+        aluno = self.request.user.aluno
+        return Matricula.objects.filter(aluno=aluno)
+    
+    def get(self, request, *args, **kwargs):
+        matriculas = self.get_queryset()
+        return Response(MatriculaSerializer(matriculas, many=True).data, status=status.HTTP_200_OK)
