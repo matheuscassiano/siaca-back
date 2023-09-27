@@ -4,9 +4,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
-from gerenciamento_api.serializers import OfertaSerializer
-from autenticacao.permissions import IsCoordenadorCurso
-from .models import Oferta
+from autenticacao.models import Aluno
+from gerenciamento_api.serializers import MatriculaSerializer, OfertaSerializer, CreateMatriculaSerializer
+from autenticacao.permissions import IsAluno, IsCoordenadorCurso, IsOfertaFromCoordenadorCurso
+from .models import Matricula, Oferta
 
 @permission_classes([IsAuthenticated, IsCoordenadorCurso])
 class OfertaCreateView(generics.CreateAPIView):
@@ -58,3 +59,36 @@ class OfertaUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
         if response.status_code == 204:
             return Response({'message': 'Oferta deletado com sucesso.'}, status=200)
         return response
+
+@permission_classes([IsAuthenticated, IsAluno])
+class MatriculaCreateView(generics.CreateAPIView):
+    queryset = Matricula.objects.all()
+    serializer_class = CreateMatriculaSerializer
+    
+    def create(self, request, *args, **kwargs):
+        oferta_id = request.data.get('oferta')
+        # aluno_id = request.data.get('aluno')
+        try:
+            oferta = Oferta.objects.get(pk=oferta_id)
+            aluno = request.user.aluno
+            qtd_matriculados = oferta.matriculas_relacionadas()
+            lugares_disponiveis = oferta.sala.lugares - qtd_matriculados
+            
+            if oferta.disciplina.curso == aluno.curso:
+                if lugares_disponiveis > 0:
+                    matricula = Matricula(oferta=oferta, aluno=aluno)
+                    matricula.save()
+                    return Response(MatriculaSerializer(matricula).data, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({"detail": "Sala não tem lugares disponíveis."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                    return Response({"detail": "Oferta não pertence a uma disciplina do curso do aluno."}, status=status.HTTP_400_BAD_REQUEST)
+        except Oferta.DoesNotExist:
+            return Response({"detail": "Oferta não encontrada."}, status=status.HTTP_404_NOT_FOUND)
+        except Aluno.DoesNotExist:
+            return Response({"detail": "Aluno não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+@permission_classes([IsAuthenticated, IsOfertaFromCoordenadorCurso])
+class MatriculaListView(generics.ListAPIView):
+    queryset = Matricula.objects.all()
+    serializer_class = MatriculaSerializer

@@ -1,6 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext as _
+# from grade.models import Matricula
 
 class Curso(models.Model):
     nome = models.CharField(max_length=50, null=False, blank=False)
@@ -34,6 +35,7 @@ class Sala(models.Model):
 
     def get_absolute_url(self):
         return reverse("view_sala", kwargs={"id_param": self.pk})
+    
 
 class Disciplina(models.Model):
     nome = models.CharField(max_length=50, null=False)
@@ -67,4 +69,3 @@ class Periodo(models.Model):
 
     def __str__(self):
         return f"{self.pk[0:-1]}.{self.pk[-1]}"
-

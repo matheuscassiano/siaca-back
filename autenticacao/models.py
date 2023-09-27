@@ -75,7 +75,7 @@ class Aluno(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    # curso = models.ForeignKey()
+    curso = models.ForeignKey(Curso, on_delete=models.DO_NOTHING, null=True, blank=True)
     # periodo_ingresso = models.ForeignKey()
     class Meta:
         verbose_name = _("aluno")

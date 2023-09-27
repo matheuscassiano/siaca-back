@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext as _
-from autenticacao.models import Professor
+from autenticacao.models import Professor, Aluno
 from coordenacao.models import Periodo, Disciplina, Sala
 
 class Oferta(models.Model):
@@ -27,3 +27,22 @@ class Oferta(models.Model):
 
     def get_absolute_url(self):
         return reverse("oferta_detail", kwargs={"pk": self.pk})
+    
+    def matriculas_relacionadas(self):
+        matriculas_count = Matricula.objects.filter(oferta=self).count()
+        return matriculas_count
+
+class Matricula(models.Model):
+    oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE)
+    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
+    create_date = models.DateField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = _("matricula")
+        verbose_name_plural = _("matriculas")
+
+    def __str__(self):
+        return f"{self.id} | {self.oferta.disciplina.nome} | {self.aluno.user.username}"
+
+    def get_absolute_url(self):
+        return reverse("matricula_detail", kwargs={"pk": self.pk})

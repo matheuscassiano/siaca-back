@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from autenticacao.models import User, Coordenador, Professor, Aluno
 from coordenacao.models import Disciplina, Sala, Curso, Periodo
-from grade.models import Oferta
+from grade.models import Oferta, Matricula
 
 class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.ChoiceField(choices=[('coordenador', 'Coordenador'), ('professor', 'Professor'), ('aluno', 'Aluno')])
@@ -104,6 +104,16 @@ class PeriodoUpdateSerializer(serializers.ModelSerializer):
 class OfertaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Oferta
+        fields = '__all__'
+
+class CreateMatriculaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Matricula
+        fields = ['oferta']
+
+class MatriculaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Matricula
         fields = '__all__'
 # class PeriodoViewSet(viewsets.ModelViewSet):
 #     queryset = Periodo.objects.all()
