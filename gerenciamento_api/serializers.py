@@ -22,6 +22,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user_type = validated_data.pop('user_type')
+        
+        validated_data['is_active'] = True
 
         user = User.objects.create_user(**validated_data)
 
