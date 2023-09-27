@@ -62,7 +62,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'autenticacao',
     'coordenacao',
-    'gerenciamento_api'
+    'gerenciamento_api',
+    'grade'
 ]
 
 MIDDLEWARE = [

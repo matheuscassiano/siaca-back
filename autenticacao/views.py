@@ -16,16 +16,9 @@ from .models import User
 from .utilities import pass_change_email
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def home(request):
-    print('Bem vindo!')
-    if request.user.is_authenticated:
-        print(request.user.user_type())
-        return Response({'message': 'Você está autenticado. Acesso autorizado.'})
-    else:
-        # Retorna uma mensagem para usuários não autenticados
-        return Response({'message': 'Acesso negado. Faça login para continuar.'})
+
+# class ProfileView(generics.RetrieveAPIView):
+    
 
 
 @permission_classes([IsAuthenticated])

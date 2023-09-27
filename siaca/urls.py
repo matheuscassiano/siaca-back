@@ -42,4 +42,5 @@ urlpatterns = [
     path('autenticacao/', include('autenticacao.urls')),
     path('coordenacao/', include('coordenacao.urls')),
     path('api/', include('gerenciamento_api.urls')),
+    path('grade/', include('grade.urls')),
 ]
