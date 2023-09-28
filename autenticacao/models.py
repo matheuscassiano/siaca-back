@@ -44,7 +44,7 @@ class Coordenador(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    curso = models.ForeignKey(Curso, on_delete=models.DO_NOTHING, null=True, blank=True)
+    curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, null=True, blank=True)
     class Meta:
         verbose_name = _("coordenador")
         verbose_name_plural = _("coordenadores")
@@ -75,7 +75,7 @@ class Aluno(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    curso = models.ForeignKey(Curso, on_delete=models.DO_NOTHING, null=True, blank=True)
+    curso = models.ForeignKey(Curso, on_delete=models.SET_NULL, null=True, blank=True)
     # periodo_ingresso = models.ForeignKey()
     class Meta:
         verbose_name = _("aluno")

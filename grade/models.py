@@ -6,7 +6,7 @@ from coordenacao.models import Periodo, Disciplina, Sala
 
 class Oferta(models.Model):
     periodo = models.ForeignKey(Periodo, on_delete=models.CASCADE, null=False, blank=False)
-    disciplina = models.ForeignKey(Disciplina, on_delete=models.DO_NOTHING, null=False, blank=False)
+    disciplina = models.ForeignKey(Disciplina, on_delete=models.CASCADE, null=False, blank=False)
     professor = models.ForeignKey(Professor, on_delete=models.DO_NOTHING, null=True, blank=True)
     sala = models.ForeignKey(Sala, on_delete=models.DO_NOTHING, null=True, blank=True)
     aula_dias = models.CharField(max_length=7, null=False, blank=False) # '{0-6}' cada numero representa um dia da semana
