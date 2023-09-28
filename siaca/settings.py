@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from .credentials import EMAIL_USER, EMAIL_PASSWORD
+from .credentials import DB_HOST, DB_PASS, DB_PORT, DB_TABLE, DB_USER, EMAIL_USER, EMAIL_PASSWORD
 from datetime import timedelta
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-=q1%r=0@cd)fo6n#4dfszi$tu4%w7s7nnbmmrm1l=9^7lziae_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['179.176.13.147','18.220.141.21', 'localhost']
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
@@ -104,11 +104,11 @@ WSGI_APPLICATION = 'siaca.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'siaca',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': DB_TABLE,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASS,
+        'HOST': DB_HOST,
+        'PORT': DB_PORT,
     }
 }
 
