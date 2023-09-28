@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from gerenciamento_api.serializers import DisciplinaSerializer, SalaSerializer, CursoSerializer, PeriodoSerializer, OfertaSerializer
 from autenticacao.permissions import IsCoordenadorCurso, IsStaff, CanCreateCurso, CanUpdateDeleteCurso
@@ -18,16 +18,17 @@ class DisciplinaCreateView(generics.CreateAPIView):
 class DisciplinaUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Disciplina.objects.all()
     serializer_class = DisciplinaSerializer
-    
-@permission_classes([IsAuthenticated, IsStaff])
+
+@permission_classes([IsAuthenticated, CanCreateCurso])
 class SalaCreateView(generics.CreateAPIView):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
-    
-@permission_classes([IsAuthenticated, IsStaff])
-class SalaUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+
+@permission_classes([IsAuthenticated, CanCreateCurso])
+class SalaCreateUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Sala.objects.all()
     serializer_class = SalaSerializer
+    lookup_field = 'id'
 
 @permission_classes([IsAuthenticated, CanCreateCurso])
 class CreateCursoView(generics.ListCreateAPIView):

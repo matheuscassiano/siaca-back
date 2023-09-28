@@ -24,7 +24,6 @@ from .utilities import pass_change_email
 @permission_classes([IsAuthenticated])
 class ChangePasswordView(generics.UpdateAPIView):
     serializer_class = ChangePasswordSerializer
-    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
