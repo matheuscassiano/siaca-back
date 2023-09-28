@@ -157,3 +157,6 @@ env/
 
 # Credentials
 *credentials.py
+
+# Deploy static
+static/
