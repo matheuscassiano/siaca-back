@@ -9,6 +9,7 @@ from gerenciamento_api.serializers import MatriculaSerializer, OfertaSerializer,
 from autenticacao.permissions import IsAluno, IsCoordenadorCurso, IsOfertaFromCoordenadorCurso
 from .models import Matricula, Oferta
 
+
 @permission_classes([IsAuthenticated, IsCoordenadorCurso])
 class OfertaCreateView(generics.CreateAPIView):
     queryset = Oferta.objects.all()
@@ -47,7 +48,7 @@ class OfertaCreateView(generics.CreateAPIView):
 class OfertaUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Oferta.objects.all()
     serializer_class = OfertaSerializer
-    lookup_field = 'id'
+    lookup_field = 'pk'
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
