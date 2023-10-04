@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework import generics
 from gerenciamento_api.serializers import ChangePasswordSerializer
 
+from django.contrib.auth.decorators import login_required
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from django.contrib.auth.tokens import default_token_generator
@@ -14,6 +15,10 @@ from django.utils.encoding import force_bytes, force_str
 from .models import User
 
 from .utilities import pass_change_email
+from gerenciamento_api.serializers import UserSerializer
+from gerenciamento_api.serializers import Aluno
+from gerenciamento_api.serializers import Coordenador
+from gerenciamento_api.serializers import Professor
 
 
 
@@ -79,3 +84,36 @@ class ResetPasswordView(APIView):
         else:
             return Response({'message': 'Password reset link is invalid or has expired.'}, status=400)
         
+
+@login_required # decorador que exige que o usuário esteja logado
+class AlunoProfileView(APIView):
+    def get(self, request):
+        user = request.user # obter o usuário atual
+        if user.is_aluno: # verificar se o usuário é um aluno
+            aluno = Aluno.objects.get(user=user) # obter o objeto aluno correspondente ao usuário
+            serializer = UserSerializer(aluno) # serializar o objeto aluno
+            return Response(serializer.data) # retornar os dados serializados como uma resposta
+        else:
+            return Response({'message': 'Você não tem permissão para acessar esta página.'}, status=403) # retornar uma mensagem de erro se o usuário não for um aluno
+
+@login_required # decorador que exige que o usuário esteja logado
+class ProfessorProfileView(APIView):
+    def get(self, request):
+        user = request.user # obter o usuário atual
+        if user.is_professor: # verificar se o usuário é um professor
+            professor = Professor.objects.get(user=user) # obter o objeto professor correspondente ao usuário
+            serializer = UserSerializer(professor) # serializar o objeto professor
+            return Response(serializer.data) # retornar os dados serializados como uma resposta
+        else:
+            return Response({'message': 'Você não tem permissão para acessar esta página.'}, status=403) # retornar uma mensagem de erro se o usuário não for um professor
+        
+@login_required # decorador que exige que o usuário esteja logado
+class CoordenadorProfileView(APIView):
+    def get(self, request):
+        user = request.user # obter o usuário atual
+        if user.is_coordenador: # verificar se o usuário é um coordenador
+            coordenador = Coordenador.objects.get(user=user) # obter o objeto coordenador correspondente ao usuário
+            serializer = UserSerializer(coordenador) # serializar o objeto coordenador
+            return Response(serializer.data) # retornar os dados serializados como uma resposta
+        else:
+            return Response({'message': 'Você não tem permissão para acessar esta página.'}, status=403) # retornar uma mensagem de erro se o usuário não for um coordenador

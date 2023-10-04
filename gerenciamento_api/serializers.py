@@ -117,15 +117,3 @@ class MatriculaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Matricula
         fields = '__all__'
-# class PeriodoViewSet(viewsets.ModelViewSet):
-#     queryset = Periodo.objects.all()
-#     serializer_class = PeriodoSerializer
-
-# router = DefaultRouter()
-# router.register(r'periodos', PeriodoViewSet)
-
-# ##url - entrar no arquivo url
-# urlpatterns = [
-#     path('periodo/', CreatePeriodoView.as_view(), name='criar_periodo'),
-#     path('periodo/<int:id>/', UpdateDeletePeriodoView.as_view(), name='atualizar_deletar_periodo'),
-# ]
