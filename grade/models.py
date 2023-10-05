@@ -40,6 +40,7 @@ class Matricula(models.Model):
     oferta = models.ForeignKey(Oferta, on_delete=models.CASCADE)
     aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
     create_date = models.DateField(auto_now_add=True)
+    aprovado = models.BooleanField(default=False, blank=True)
     
     class Meta:
         verbose_name = _("matricula")

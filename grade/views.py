@@ -103,26 +103,12 @@ class OfertaUpdateDeleteView(OfertaBaseView, generics.RetrieveUpdateDestroyAPIVi
         if not sala_disponivel:
             return Response({'message': 'Sala não está disponível nos dias e horários escolhidos.'}, status=400)
 
-        # Verificar colisões de horários com outras Ofertas do mesmo Professor no mesmo período
-        # if instance.professor is not None:
-        #     colisoes = self.check_professor_schedule_collision(
-        #         professor=professor_id,
-        #         aula_dias=aula_dias,
-        #         aula_hora_inicio=aula_hora_inicio,
-        #         aula_hora_fim=aula_hora_fim,
-        #         oferta_id=instance.id
-        #     )
-        # else:
         colisoes = []
-        print(professor_id)
+
         if professor_id == None:
-            print("if prof_id = None")
             if instance.professor is not None:
-                print("if instance.prof exist")
                 professor_id = instance.professor.pk
-                
         else:
-            print("else")
             colisoes = self.check_professor_schedule_collision(
                 professor_id=professor_id,
                 aula_dias=aula_dias,
@@ -148,6 +134,13 @@ class MatriculaCreateView(generics.CreateAPIView):
     queryset = Matricula.objects.all()
     serializer_class = CreateMatriculaSerializer
 
+    def is_disciplina_done(self, oferta, aluno):
+        """
+        Realiza uma query para verificar se a disciplina da oferta já foi paga pelo aluno
+        """
+        return Matricula.objects.filter(aluno=aluno, oferta__disciplina=oferta.disciplina, \
+                                        aprovado=True).exists()
+
     def create(self, request, *args, **kwargs):
         oferta_id = request.data.get('oferta')
         try:
@@ -157,37 +150,33 @@ class MatriculaCreateView(generics.CreateAPIView):
             lugares_disponiveis = oferta.sala.lugares - qtd_matriculados
 
             if oferta.disciplina.curso == aluno.curso:
-                if lugares_disponiveis > 0:
-                    # Verificar se há choque de dia/horário com outras matrículas do aluno no mesmo período
-                    periodos_do_aluno = Matricula.objects.filter(aluno=aluno).values_list('oferta__periodo', flat=True)
-                    choque_horario = Matricula.objects.filter(
-                        Q(oferta__periodo__in=periodos_do_aluno) &
-                        Q(oferta__aula_hora_inicio__lt=oferta.aula_hora_fim, oferta__aula_hora_fim__gt=oferta.aula_hora_inicio)
-                    ).exclude(
-                        Q(oferta__aula_dias__contains='0') if '0' in oferta.aula_dias else Q()
-                    ).exclude(
-                        Q(oferta__aula_dias__contains='1') if '1' in oferta.aula_dias else Q()
-                    ).exclude(
-                        Q(oferta__aula_dias__contains='2') if '2' in oferta.aula_dias else Q()
-                    ).exclude(
-                        Q(oferta__aula_dias__contains='3') if '3' in oferta.aula_dias else Q()
-                    ).exclude(
-                        Q(oferta__aula_dias__contains='4') if '4' in oferta.aula_dias else Q()
-                    ).exclude(
-                        Q(oferta__aula_dias__contains='5') if '5' in oferta.aula_dias else Q()
-                    ).exclude(
-                        Q(oferta__aula_dias__contains='6') if '6' in oferta.aula_dias else Q()
-                    ).exists()
 
-                    print(choque_horario)
-                    if not choque_horario:
-                        matricula = Matricula(oferta=oferta, aluno=aluno)
-                        matricula.save()
-                        return Response(MatriculaSerializer(matricula).data, status=status.HTTP_201_CREATED)
+                # Verificar se disciplina já foi paga pelo aluno
+                if not self.is_disciplina_done(oferta, aluno):
+                    if lugares_disponiveis > 0:
+
+                        # Verificar se há choque de dia/horário com outras matrículas do aluno no mesmo período
+                        periodos_do_aluno = Matricula.objects.filter(aluno=aluno).values_list('oferta__periodo', flat=True)
+                        matriculas = Matricula.objects.filter(Q(oferta__periodo=oferta.periodo) &
+                            Q(oferta__aula_hora_inicio__lt=oferta.aula_hora_fim, oferta__aula_hora_fim__gt=oferta.aula_hora_inicio)
+                        )
+
+                        # Cria um queryset vazio para dar append em todas as matriculas que contém os mesmos dias que a oferta atual
+                        query_set = Matricula.objects.none() 
+                        for dia in oferta.aula_dias:
+                            query_set = query_set | matriculas.filter(oferta__aula_dias__contains=dia)
+                        choque_horario = query_set.exists()
+
+                        if not choque_horario:
+                            matricula = Matricula(oferta=oferta, aluno=aluno)
+                            matricula.save()
+                            return Response(MatriculaSerializer(matricula).data, status=status.HTTP_201_CREATED)
+                        else:
+                            return Response({"detail": "Choque de dia/horário com outra matrícula do mesmo período."}, status=status.HTTP_400_BAD_REQUEST)
                     else:
-                        return Response({"detail": "Choque de dia/horário com outra matrícula do mesmo período."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"detail": "Sala não tem lugares disponíveis."}, status=status.HTTP_400_BAD_REQUEST)
                 else:
-                    return Response({"detail": "Sala não tem lugares disponíveis."}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"detail": "Disciplina da oferta já foi paga pelo aluno."}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({"detail": "Oferta não pertence a uma disciplina do curso do aluno."}, status=status.HTTP_400_BAD_REQUEST)
         except Oferta.DoesNotExist:
