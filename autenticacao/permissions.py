@@ -18,13 +18,11 @@ class CanUpdateUserData(permissions.BasePermission):
         )
 
 class IsCoordenadorCurso(permissions.BasePermission):
-    def has_permission(self, request, view):
+    def has_object_permission(self, request, view, obj):
         if request.user.user_type() == 'coordenador':
-            curso_id = int(request.data.get('curso'))
-            if curso_id:
-                # Verificar se o usuário logado é coordenador do curso
-                # ao qual a disciplina está sendo associada
-                return request.user.coordenador.curso.id == curso_id
+            # Verificar se o usuário logado é coordenador do curso
+            # ao qual o objeto (por exemplo, uma disciplina) está associado
+            return request.user.coordenador.curso == obj.curso
         return False
     
 class IsStaff(permissions.BasePermission):
@@ -83,9 +81,21 @@ class CanUpdateDeletePeriodo(permissions.BasePermission):
 class IsOfertaFromCoordenadorCurso(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # Verificar se o usuário logado é coordenador, e se o curso a qual a matricula pertence é o mesmo do coordenador
-        if request.user.type_user() == 'coordenador':
+        if request.user.user_type() == 'coordenador':
             coordenador = request.user.coordenador
             if coordenador.curso.pk == obj.oferta.disciplina.curso.pk:
+                return True
+            else:
+                return False
+        else:
+            return False
+
+class IsDisciplinaFromCoordenadorCurso(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        # Verificar se o usuário logado é coordenador, e se o curso a qual a matricula pertence é o mesmo do coordenador
+        if request.user.user_type() == 'coordenador':
+            coordenador = request.user.coordenador
+            if coordenador.curso.pk == obj.disciplina.curso.pk:
                 return True
             else:
                 return False
