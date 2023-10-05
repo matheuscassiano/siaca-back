@@ -34,6 +34,11 @@ class IsAluno(permissions.BasePermission):
     def has_permission(self, request, view):
         # Verifica se o usuário logado é aluno
         return (request.user.user_type() == 'aluno')
+
+class IsProfessor(permissions.BasePermission):
+    def has_permission(self, request, view):
+        # Verifica se o usuário logado é professor
+        return (request.user.user_type() == 'professor')
     
 class CanCreateCurso(permissions.BasePermission):
     def has_permission(self, request, view):
