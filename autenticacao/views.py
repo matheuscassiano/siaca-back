@@ -12,14 +12,10 @@ from rest_framework.views import APIView
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from .models import User
+from .models import User, Aluno, Professor, Coordenador
 
 from .utilities import pass_change_email
-from gerenciamento_api.serializers import UserSerializer
-from gerenciamento_api.serializers import Aluno
-from gerenciamento_api.serializers import Coordenador
-from gerenciamento_api.serializers import Professor
-
+from gerenciamento_api.serializers import UserSerializer, AlunoSerializer, CoordenadorSerializer, ProfessorSerializer
 
 
 # class ProfileView(generics.RetrieveAPIView):
@@ -85,35 +81,24 @@ class ResetPasswordView(APIView):
             return Response({'message': 'Password reset link is invalid or has expired.'}, status=400)
         
 
-@login_required # decorador que exige que o usuário esteja logado
-class AlunoProfileView(APIView):
+@permission_classes([IsAuthenticated])
+class ProfileView(APIView):
     def get(self, request):
         user = request.user # obter o usuário atual
-        if user.is_aluno: # verificar se o usuário é um aluno
-            aluno = Aluno.objects.get(user=user) # obter o objeto aluno correspondente ao usuário
-            serializer = UserSerializer(aluno) # serializar o objeto aluno
-            return Response(serializer.data) # retornar os dados serializados como uma resposta
-        else:
-            return Response({'message': 'Você não tem permissão para acessar esta página.'}, status=403) # retornar uma mensagem de erro se o usuário não for um aluno
+        user_type = user.user_type # obter o tipo de usuário
 
-@login_required # decorador que exige que o usuário esteja logado
-class ProfessorProfileView(APIView):
-    def get(self, request):
-        user = request.user # obter o usuário atual
-        if user.is_professor: # verificar se o usuário é um professor
+        if user_type == 'aluno': # se o usuário for um aluno
+            aluno = Aluno.objects.get(user=user) # obter o objeto aluno correspondente ao usuário
+            serializer = AlunoSerializer(aluno) # serializar o objeto aluno
+
+        elif user_type == 'professor': # se o usuário for um professor
             professor = Professor.objects.get(user=user) # obter o objeto professor correspondente ao usuário
-            serializer = UserSerializer(professor) # serializar o objeto professor
-            return Response(serializer.data) # retornar os dados serializados como uma resposta
-        else:
-            return Response({'message': 'Você não tem permissão para acessar esta página.'}, status=403) # retornar uma mensagem de erro se o usuário não for um professor
-        
-@login_required # decorador que exige que o usuário esteja logado
-class CoordenadorProfileView(APIView):
-    def get(self, request):
-        user = request.user # obter o usuário atual
-        if user.is_coordenador: # verificar se o usuário é um coordenador
+            serializer = ProfessorSerializer(professor) # serializar o objeto professor
+
+        elif user_type == 'coordenador': # se o usuário for um coordenador
             coordenador = Coordenador.objects.get(user=user) # obter o objeto coordenador correspondente ao usuário
-            serializer = UserSerializer(coordenador) # serializar o objeto coordenador
-            return Response(serializer.data) # retornar os dados serializados como uma resposta
+            serializer = CoordenadorSerializer(coordenador) # serializar o objeto coordenador
+
         else:
-            return Response({'message': 'Você não tem permissão para acessar esta página.'}, status=403) # retornar uma mensagem de erro se o usuário não for um coordenador
+            return Response({'message': 'Tipo de usuário inválido.'}, status=400) # retornar uma mensagem de erro se o tipo de usuário não for válido
+        return Response(serializer.data) # retornar os dados serializados como uma resposta
