@@ -85,8 +85,8 @@ class ResetPasswordView(APIView):
 class ProfileView(APIView):
     def get(self, request):
         user = request.user # obter o usuário atual
-        user_type = user.user_type # obter o tipo de usuário
-
+        user_type = user.user_type() # obter o tipo de usuário
+        
         if user_type == 'aluno': # se o usuário for um aluno
             aluno = Aluno.objects.get(user=user) # obter o objeto aluno correspondente ao usuário
             serializer = AlunoSerializer(aluno) # serializar o objeto aluno
