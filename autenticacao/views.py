@@ -6,15 +6,16 @@ from rest_framework.response import Response
 from rest_framework import generics
 from gerenciamento_api.serializers import ChangePasswordSerializer
 
+from django.contrib.auth.decorators import login_required
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from .models import User
+from .models import User, Aluno, Professor, Coordenador
 
 from .utilities import pass_change_email
-
+from gerenciamento_api.serializers import UserSerializer, AlunoSerializer, CoordenadorSerializer, ProfessorSerializer
 
 
 # class ProfileView(generics.RetrieveAPIView):
@@ -79,3 +80,25 @@ class ResetPasswordView(APIView):
         else:
             return Response({'message': 'Password reset link is invalid or has expired.'}, status=400)
         
+
+@permission_classes([IsAuthenticated])
+class ProfileView(APIView):
+    def get(self, request):
+        user = request.user # obter o usuário atual
+        user_type = user.user_type() # obter o tipo de usuário
+        
+        if user_type == 'aluno': # se o usuário for um aluno
+            aluno = Aluno.objects.get(user=user) # obter o objeto aluno correspondente ao usuário
+            serializer = AlunoSerializer(aluno) # serializar o objeto aluno
+
+        elif user_type == 'professor': # se o usuário for um professor
+            professor = Professor.objects.get(user=user) # obter o objeto professor correspondente ao usuário
+            serializer = ProfessorSerializer(professor) # serializar o objeto professor
+
+        elif user_type == 'coordenador': # se o usuário for um coordenador
+            coordenador = Coordenador.objects.get(user=user) # obter o objeto coordenador correspondente ao usuário
+            serializer = CoordenadorSerializer(coordenador) # serializar o objeto coordenador
+
+        else:
+            return Response({'message': 'Tipo de usuário inválido.'}, status=400) # retornar uma mensagem de erro se o tipo de usuário não for válido
+        return Response(serializer.data) # retornar os dados serializados como uma resposta

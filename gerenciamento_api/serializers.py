@@ -3,12 +3,14 @@ from autenticacao.models import User, Coordenador, Professor, Aluno
 from coordenacao.models import Disciplina, Sala, Curso, Periodo
 from grade.models import Oferta, Matricula
 
+
 class UserSerializer(serializers.ModelSerializer):
     user_type = serializers.ChoiceField(choices=[('coordenador', 'Coordenador'), ('professor', 'Professor'), ('aluno', 'Aluno')])
     class Meta:
         model = User
-        fields = ['username', 'password', 'first_name', 'last_name', 'email', 'cpf', 'telefone', 'endereco', 'bairro', 'cidade', 'estado', 'user_type', 'is_active']
+        fields = ['id', 'username', 'password', 'first_name', 'last_name', 'email', 'cpf', 'telefone', 'endereco', 'bairro', 'cidade', 'estado', 'user_type', 'is_active']
         extra_kwargs = {
+            'id': {'required': False},
             'password': {'write_only': True},  # A senha será tratada apenas na criação
             'first_name': {'required': False},  # Torna o campo 'first_name' opcional
             'last_name': {'required': False},  # Torna o campo 'last_name' opcional
@@ -117,15 +119,48 @@ class MatriculaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Matricula
         fields = '__all__'
-# class PeriodoViewSet(viewsets.ModelViewSet):
-#     queryset = Periodo.objects.all()
-#     serializer_class = PeriodoSerializer
 
-# router = DefaultRouter()
-# router.register(r'periodos', PeriodoViewSet)
+class AlunoSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # Use o serializer de User para o campo 'user'
 
-# ##url - entrar no arquivo url
-# urlpatterns = [
-#     path('periodo/', CreatePeriodoView.as_view(), name='criar_periodo'),
-#     path('periodo/<int:id>/', UpdateDeletePeriodoView.as_view(), name='atualizar_deletar_periodo'),
-# ]
+    class Meta:
+        model = Aluno # especificar o modelo que será serializado
+        fields = ('curso', 'user') # especificar os campos que serão serializados
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Mapeie os campos virtuais 'user_' no dicionário de saída
+        user_data = ret.pop('user')
+        for key, value in user_data.items():
+            ret[f'user_{key}'] = value
+        return ret
+
+class ProfessorSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # Use o serializer de User para o campo 'user'
+
+    class Meta:
+        model = Professor # especificar o modelo que será serializado
+        fields = ('lattes', 'area_atuacao', 'user') # especificar os campos que serão serializados
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Mapeie os campos virtuais 'user_' no dicionário de saída
+        user_data = ret.pop('user')
+        for key, value in user_data.items():
+            ret[f'user_{key}'] = value
+        return ret
+
+class CoordenadorSerializer(serializers.ModelSerializer):
+    user = UserSerializer()  # Use o serializer de User para o campo 'user'
+
+    class Meta:
+        model = Coordenador
+        fields = ('curso', 'user')
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Mapeie os campos virtuais 'user_' no dicionário de saída
+        user_data = ret.pop('user')
+        for key, value in user_data.items():
+            ret[f'user_{key}'] = value
+        return ret
