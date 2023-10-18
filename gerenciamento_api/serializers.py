@@ -121,14 +121,14 @@ class MatriculaSerializer(serializers.ModelSerializer):
 class AlunoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Aluno # especificar o modelo que será serializado
-        fields = ('curso',) # especificar os campos que serão serializados
+        fields = ('curso', 'user') # especificar os campos que serão serializados
 
 class ProfessorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Professor # especificar o modelo que será serializado
-        fields = ('lattes', 'area_atuacao') # especificar os campos que serão serializados
+        fields = ('lattes', 'area_atuacao', 'user') # especificar os campos que serão serializados
 
 class CoordenadorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coordenador # especificar o modelo que será serializado
-        fields = ('curso',) # especificar os campos que serão serializados
+        fields = ('curso', 'user') # especificar os campos que serão serializados
