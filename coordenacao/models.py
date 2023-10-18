@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext as _
-# from grade.models import Matricula
+from django.db.models import Sum
 
 class Curso(models.Model):
     nome = models.CharField(max_length=50, null=False, blank=False)
@@ -10,7 +10,7 @@ class Curso(models.Model):
     ementa = models.BinaryField(null=True, blank=True)
     create_date = models.DateField(auto_now_add=True)
     update_date = models.DateField(auto_now=True)
-    # created_by = models.ForeignKey(Coordenador, on_delete=models.CASCADE)
+    horas_optat = models.FloatField(blank=True, null=False, default=0)
 
     class Meta:
         verbose_name = _("curso")
@@ -21,6 +21,12 @@ class Curso(models.Model):
 
     def get_absolute_url(self):
         return reverse("view_curso", kwargs={"id_param": self.pk})
+    
+    @property
+    def horas_obrig(self):
+        # Calcula a soma das horas de todas as disciplinas cadastradas no curso
+        total = self.disciplinas.aggregate(total_horas=Sum('carga_horaria'))['total_horas']
+        return total or 0  # Retorna 0 se não houver disciplinas associadas ao curso
 
 class Sala(models.Model):
     descricao = models.CharField(max_length=150, null=True, blank=True)
@@ -47,6 +53,7 @@ class Disciplina(models.Model):
     update_date = models.DateField(auto_now=True)
     curso = models.ForeignKey(Curso, on_delete=models.CASCADE)
     pre_requisito = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL)
+    obrigatoria = models.BooleanField(blank=True, null=False, default=True)
 
     class Meta:
         verbose_name = _("disciplina")
