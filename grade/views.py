@@ -297,7 +297,9 @@ class AlunoBaseView():
         ofertas_periodo_vigente = Oferta.objects.filter(periodo=periodo_atual)
 
         # Passo 2: Filtar por apenas disciplinas nao pagas do aluno
-        disciplinas = self.get_disciplinas_nao_pagas_periodo_vigente().values_list('id')
+        disciplinas = self.get_disciplinas_nao_pagas_periodo_vigente() \
+            .order_by('-carga_horaria', 'obrigatoria').values_list('id')  # Prioridades
+        
         ofertas_sugeridas = ofertas_periodo_vigente.filter(disciplina_id__in=disciplinas)
         return ofertas_sugeridas
 
@@ -327,5 +329,5 @@ class OfertaSugestaoListView(generics.ListAPIView, AlunoBaseView):
 
         print('Horas Optativas Pagas: ', self.get_horas_pagas(obrigatoria=False))
         print('Horas Optativas Restantes: ', self.get_horas_restantes(obrigatoria=False))
-        
+
         return Response(OfertaDisciplinaSerializer(ofertas, many=True).data, status=status.HTTP_200_OK)
