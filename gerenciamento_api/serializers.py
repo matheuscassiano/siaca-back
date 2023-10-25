@@ -164,3 +164,22 @@ class CoordenadorSerializer(serializers.ModelSerializer):
         for key, value in user_data.items():
             ret[f'user_{key}'] = value
         return ret
+    
+class OfertaDisciplinaSerializer(serializers.ModelSerializer):
+    disciplina = DisciplinaSerializer()  # Use o serializer de User para o campo 'user'
+
+    class Meta:
+        model = Oferta # especificar o modelo que será serializado
+        fields = ('id', 'periodo', 'disciplina', 'professor', 'sala', 'aula_dias', 
+                    'aula_hora_inicio',
+                    'aula_hora_fim', 
+                    'create_date', 
+                    'update_date', 'disciplina')
+    
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Mapeie os campos virtuais 'disciplina_' no dicionário de saída
+        disciplina_data = ret.pop('disciplina')
+        for key, value in disciplina_data.items():
+            ret[f'disciplina_{key}'] = value
+        return ret

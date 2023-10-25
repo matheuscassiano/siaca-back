@@ -18,7 +18,7 @@ class User(AbstractUser):
         verbose_name_plural = _("users")
 
     def __str__(self):
-        return f"{self.cpf} | {self.first_name}"
+        return f"{self.cpf} | {self.username}"
     
     def user_type(self):
         user_type = None
@@ -82,4 +82,4 @@ class Aluno(models.Model):
         verbose_name_plural = _("alunos")
 
     def __str__(self):
-        return f"{self.user.cpf} | {self.user.first_name}"
+        return f"{self.user.cpf} | {self.user.username}"

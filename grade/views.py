@@ -6,11 +6,12 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
 from autenticacao.models import Aluno
 from coordenacao.models import Disciplina, Periodo
-from gerenciamento_api.serializers import DisciplinaSerializer, MatriculaSerializer, OfertaSerializer, CreateMatriculaSerializer
+from gerenciamento_api.serializers import DisciplinaSerializer, MatriculaSerializer, OfertaDisciplinaSerializer, OfertaSerializer, CreateMatriculaSerializer
 from autenticacao.permissions import IsAluno, IsCoordenadorCurso, IsOfertaFromCoordenadorCurso, IsDisciplinaFromCoordenadorCurso, IsProfessor
 from grade.utilities import days_overlap
 from .models import Matricula, Oferta
 from django.db.models import Q
+from django.db.models import Sum
 
 class OfertaBaseView:
     def is_sala_disponivel(self, sala_id, aula_dias, aula_hora_inicio, aula_hora_fim, periodo_id, oferta_id=None):
@@ -249,7 +250,11 @@ class AlunoBaseView():
         """
         Retorna a quantidade de horas de disciplinas obrigatorias ou optativas pagas
         """
-        return 0 | self.get_disciplinas_pagas().filter(obrigatoria=obrigatoria).aggregate(total_horas=sum('carga_horaria'))['total_horas']
+        horas = self.get_disciplinas_pagas().filter(obrigatoria=obrigatoria).aggregate(total_horas=Sum('carga_horaria'))['total_horas']
+        if horas is not None:
+            return horas
+        else:
+            return 0
     
     def get_horas_restantes(self, obrigatoria=True):
         """
@@ -260,7 +265,7 @@ class AlunoBaseView():
         else:
             curso_carga_horaria = self.request.user.aluno.curso.horas_optat
         horas_pagas = self.get_horas_pagas(obrigatoria)
-        return 0 | curso_carga_horaria - horas_pagas
+        return curso_carga_horaria - horas_pagas
 
     def get_disciplinas_nao_pagas_periodo_vigente(self):
         aluno = self.request.user.aluno
@@ -278,9 +283,24 @@ class AlunoBaseView():
         disciplinas_pagas_pelo_aluno = self.get_disciplinas_pagas()
 
         # Passo 4: Filtrar as disciplinas do período vigente que não foram pagas pelo aluno
-        disciplinas_nao_pagas_periodo_vigente = disciplinas_periodo_vigente.exclude(id__in=disciplinas_pagas_pelo_aluno)
+        disciplinas_nao_pagas_periodo_vigente = disciplinas_periodo_vigente.exclude(id__in=disciplinas_pagas_pelo_aluno).order_by('periodo').values()
 
         return disciplinas_nao_pagas_periodo_vigente
+    
+    def get_sugestao_ofertas_atuais(self):
+        aluno = self.request.user.aluno
+        curso = aluno.curso
+
+        periodo_atual = Periodo.objects.latest('start_date')
+
+        # Passo 1: Filtrar as ofertas do período atual (vigente)
+        ofertas_periodo_vigente = Oferta.objects.filter(periodo=periodo_atual)
+
+        # Passo 2: Filtar por apenas disciplinas nao pagas do aluno
+        disciplinas = self.get_disciplinas_nao_pagas_periodo_vigente().values_list('id')
+        ofertas_sugeridas = ofertas_periodo_vigente.filter(disciplina_id__in=disciplinas)
+        return ofertas_sugeridas
+
 
 @permission_classes([IsAuthenticated, IsAluno])
 class MyDisciplinasPagasListView(generics.ListAPIView, AlunoBaseView):
@@ -292,3 +312,20 @@ class MyDisciplinasPagasListView(generics.ListAPIView, AlunoBaseView):
     def get(self, request, *args, **kwargs):
         disciplinas = self.get_queryset()
         return Response(DisciplinaSerializer(disciplinas, many=True).data, status=status.HTTP_200_OK)
+
+@permission_classes([IsAuthenticated, IsAluno])
+class OfertaSugestaoListView(generics.ListAPIView, AlunoBaseView):
+    serializer_class = OfertaDisciplinaSerializer
+
+    def get_queryset(self):
+        return self.get_sugestao_ofertas_atuais()
+    
+    def get(self, request, *args, **kwargs):
+        ofertas = self.get_queryset()
+        print('Horas Pagas: ', self.get_horas_pagas())
+        print('Horas Restantes: ', self.get_horas_restantes())
+
+        print('Horas Optativas Pagas: ', self.get_horas_pagas(obrigatoria=False))
+        print('Horas Optativas Restantes: ', self.get_horas_restantes(obrigatoria=False))
+        
+        return Response(OfertaDisciplinaSerializer(ofertas, many=True).data, status=status.HTTP_200_OK)

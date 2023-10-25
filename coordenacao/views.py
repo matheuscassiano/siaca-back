@@ -30,15 +30,30 @@ class SalaCreateUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = SalaSerializer
     lookup_field = 'id'
 
-@permission_classes([IsAuthenticated, CanCreateCurso])
+@permission_classes([IsAuthenticated])
 class CreateCursoView(generics.ListCreateAPIView):
     queryset = Curso.objects.all()
     serializer_class = CursoSerializer
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type() == 'coordenador':
+            coordenador = self.request.user.coordenador
+            queryset = Curso.objects.filter(coordenador=coordenador)
+        elif user.user_type() == 'professor':
+            professor = self.request.user.professor
+            queryset = Curso.objects.filter(professor=professor)
+        else:
+            aluno = self.request.user.aluno
+            queryset = Curso.objects.filter(aluno=aluno)
+        return queryset
+
+    @permission_classes([IsAuthenticated, CanCreateCurso]) # TODO: Aluno consegue criar curso
     def create(self, request, *args, **kwargs):
         response = super().create(request, *args, **kwargs)
         response.data['message'] = 'Curso criado com sucesso.'
         return response
+        
 
 @permission_classes([IsAuthenticated, CanUpdateDeleteCurso])
 class UpdateDeleteCursoView(generics.RetrieveUpdateDestroyAPIView):

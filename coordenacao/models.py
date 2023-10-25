@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, connection
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.db.models import Sum
@@ -10,7 +10,7 @@ class Curso(models.Model):
     ementa = models.BinaryField(null=True, blank=True)
     create_date = models.DateField(auto_now_add=True)
     update_date = models.DateField(auto_now=True)
-    horas_optat = models.FloatField(blank=True, null=False, default=0)
+    horas_optat = models.IntegerField(blank=True, null=False, default=0)
 
     class Meta:
         verbose_name = _("curso")
@@ -25,8 +25,15 @@ class Curso(models.Model):
     @property
     def horas_obrig(self):
         # Calcula a soma das horas de todas as disciplinas cadastradas no curso
-        total = self.disciplinas.aggregate(total_horas=Sum('carga_horaria'))['total_horas']
-        return total or 0  # Retorna 0 se não houver disciplinas associadas ao curso
+        # Realiza uma subconsulta para calcular a soma das cargas horárias das disciplinas obrigatórias
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT COALESCE(SUM(carga_horaria), 0)
+                FROM coordenacao_disciplina
+                WHERE curso_id = %s AND obrigatoria = True
+            """, [self.id])
+            total_horas = cursor.fetchone()[0]
+            return total_horas  # Retorna 0 se não houver disciplinas associadas ao curso
 
 class Sala(models.Model):
     descricao = models.CharField(max_length=150, null=True, blank=True)
@@ -47,7 +54,7 @@ class Disciplina(models.Model):
     nome = models.CharField(max_length=50, null=False)
     descricao = models.TextField(null=True, blank=True)
     periodo = models.IntegerField(null=False, blank=False)
-    ementa = models.BinaryField(null=True)
+    # ementa = models.BinaryField(null=True)
     carga_horaria = models.IntegerField(null=False, blank=False)
     create_date = models.DateField(auto_now_add=True)
     update_date = models.DateField(auto_now=True)
