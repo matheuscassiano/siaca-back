@@ -1,11 +1,12 @@
+
+from .models import Curso
+from autenticacao.models import User
+from autenticacao.migrations import *
+
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
-from .models import Curso, Periodo
-from autenticacao.models import User, Coordenador, Professor, Aluno
-from autenticacao.migrations import *
-from gerenciamento_api.serializers import PeriodoSerializer
 
 class CreateCursoViewTest(TestCase):
     def setUp(self):
