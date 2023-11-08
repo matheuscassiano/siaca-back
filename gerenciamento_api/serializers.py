@@ -109,6 +109,9 @@ class OfertaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Oferta
         fields = '__all__'
+        extra_kwargs = {
+            'sala': {'required': True}
+        }
 
 class CreateMatriculaSerializer(serializers.ModelSerializer):
     class Meta:

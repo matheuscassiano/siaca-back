@@ -46,6 +46,46 @@ class OfertaBaseView:
         print(colisoes)
         return colisoes
     
+    def get_collisions(self, oferta_queryset):
+        """
+        Itera todas as ofertas filtrando o proprio oferta_query_set verificando se tem choque entre alguma delas
+        se existir algum choque, query_set recebe as ofertas com colisao e adiciona a collisions_dict esse query_set
+        tendo o Oferta Id como chave (Ou seja, ao acessar o dicionario com o id da oferta, teremos um query set de colisoes dela)
+        """
+        collisions_dict = {} 
+        if oferta_queryset.exists():
+            for oferta in oferta_queryset:
+                query_collisions = Oferta.objects.none()
+
+                if oferta_queryset.exclude(id=oferta.id).filter(aula_hora_inicio__lt=oferta.aula_hora_fim, aula_hora_fim__gt=oferta.aula_hora_inicio):
+                    for dia in oferta.aula_dias:
+                        query_collisions = query_collisions | oferta_queryset.exclude(id=oferta.id).filter(aula_dias__contains=dia)
+                if query_collisions.exists():
+                    collisions_dict.update({oferta.id:query_collisions})
+                else:
+                    collisions_dict.update({oferta.id:Oferta.objects.none()})
+        return collisions_dict
+         
+    def exclude_collisions(self, ofertas_sugeridas):
+        """
+        Verifica colisoes entre as ofertas sugeridas e exclui as menos importantes
+        do proprio query set
+        """
+        colisoes = self.get_collisions(ofertas_sugeridas)
+
+        while len(colisoes) > 0:
+            for oferta in ofertas_sugeridas:
+                colisao_atual = colisoes.get(oferta.id)
+                if colisao_atual:
+                    ofertas_para_excluir = colisao_atual.values_list('id', flat=True)
+                    print(oferta)
+                    print(ofertas_para_excluir, '\n')
+                    ofertas_sugeridas = ofertas_sugeridas.exclude(id__in=ofertas_para_excluir)
+                    colisoes.pop(oferta.id)
+                break
+     
+        print("Resultado: ", ofertas_sugeridas)
+        return ofertas_sugeridas
 
 
 @permission_classes([IsAuthenticated, IsDisciplinaFromCoordenadorCurso])
@@ -287,7 +327,19 @@ class AlunoBaseView():
 
         return disciplinas_nao_pagas_periodo_vigente
     
+    def set_sugestao_ofertas(self, ofertas_periodo_vigente, order1, order2):
+        # Filtar por apenas disciplinas nao pagas do aluno com as ordenacoes dos parametros
+        # strings "+" ou "-" de acordo com o necessario 
+        disciplinas = self.get_disciplinas_nao_pagas_periodo_vigente()
+
+        ofertas_sugeridas = ofertas_periodo_vigente.filter(disciplina_id__in=disciplinas.values_list('id', flat=True)) \
+                            .order_by(order1, order2)
+        print(ofertas_sugeridas)
+        # return OfertaBaseView().exclude_collisions(ofertas_sugeridas)
+        return ofertas_sugeridas
+    
     def get_sugestao_ofertas_atuais(self):
+        todas_sugestoes = {}
         aluno = self.request.user.aluno
         curso = aluno.curso
 
@@ -295,13 +347,19 @@ class AlunoBaseView():
 
         # Passo 1: Filtrar as ofertas do período atual (vigente)
         ofertas_periodo_vigente = Oferta.objects.filter(periodo=periodo_atual)
-
-        # Passo 2: Filtar por apenas disciplinas nao pagas do aluno
-        disciplinas = self.get_disciplinas_nao_pagas_periodo_vigente() \
-            .order_by('-carga_horaria', 'obrigatoria').values_list('id')  # Prioridades
         
-        ofertas_sugeridas = ofertas_periodo_vigente.filter(disciplina_id__in=disciplinas)
-        return ofertas_sugeridas
+        print("Maior carga horaria:")
+        sugestao_ofertas = self.set_sugestao_ofertas(ofertas_periodo_vigente, '-disciplina__obrigatoria', '-disciplina__carga_horaria')
+        todas_sugestoes.update({'maior_carga_horaria':sugestao_ofertas})
+
+        print("Menor carga horaria:")
+        sugestao_ofertas = self.set_sugestao_ofertas(ofertas_periodo_vigente, '-disciplina__obrigatoria', 'disciplina__carga_horaria')
+        todas_sugestoes.update({'menor_carga_horaria':sugestao_ofertas})
+        
+        print("Foco em optativas:")
+        sugestao_ofertas = self.set_sugestao_ofertas(ofertas_periodo_vigente, 'disciplina__obrigatoria', '-disciplina__carga_horaria')
+        todas_sugestoes.update({'foco_optativas':sugestao_ofertas})
+        return todas_sugestoes
 
 
 @permission_classes([IsAuthenticated, IsAluno])
@@ -324,10 +382,17 @@ class OfertaSugestaoListView(generics.ListAPIView, AlunoBaseView):
     
     def get(self, request, *args, **kwargs):
         ofertas = self.get_queryset()
-        print('Horas Pagas: ', self.get_horas_pagas())
-        print('Horas Restantes: ', self.get_horas_restantes())
+        # print('Horas Pagas: ', self.get_horas_pagas())
+        # print('Horas Restantes: ', self.get_horas_restantes())
 
-        print('Horas Optativas Pagas: ', self.get_horas_pagas(obrigatoria=False))
-        print('Horas Optativas Restantes: ', self.get_horas_restantes(obrigatoria=False))
+        # print('Horas Optativas Pagas: ', self.get_horas_pagas(obrigatoria=False))
+        # print('Horas Optativas Restantes: ', self.get_horas_restantes(obrigatoria=False))
 
-        return Response(OfertaDisciplinaSerializer(ofertas, many=True).data, status=status.HTTP_200_OK)
+
+        data = {
+            'maior_carga_horaria': OfertaDisciplinaSerializer(ofertas['maior_carga_horaria'], many=True).data,
+            'menor_carga_horaria': OfertaDisciplinaSerializer(ofertas['menor_carga_horaria'], many=True).data,
+            'foco_optativas': OfertaDisciplinaSerializer(ofertas['foco_optativas'], many=True).data,
+        }
+
+        return Response(data, status=status.HTTP_200_OK)
