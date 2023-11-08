@@ -12,6 +12,7 @@ from grade.utilities import days_overlap
 from .models import Matricula, Oferta
 from django.db.models import Q
 from django.db.models import Sum
+import datetime
 
 class OfertaBaseView:
     def is_sala_disponivel(self, sala_id, aula_dias, aula_hora_inicio, aula_hora_fim, periodo_id, oferta_id=None):
@@ -97,8 +98,8 @@ class OfertaCreateView(OfertaBaseView, generics.CreateAPIView):
         # Verificar disponibilidade da sala
         sala_id = self.request.data.get('sala')
         aula_dias = self.request.data.get('aula_dias')
-        aula_hora_inicio = self.request.data.get('aula_hora_inicio')
-        aula_hora_fim = self.request.data.get('aula_hora_fim')
+        aula_hora_inicio = datetime.datetime.strptime(self.request.data.get('aula_hora_inicio'), '%H:%M').time()
+        aula_hora_fim = datetime.datetime.strptime(self.request.data.get('aula_hora_fim'), '%H:%M').time()
         periodo_id = self.request.data.get('periodo')
         professor_id = self.request.data.get('professor')
         # Verificar se a sala está disponível nos dias e horários escolhidos
@@ -134,8 +135,14 @@ class OfertaUpdateDeleteView(OfertaBaseView, generics.RetrieveUpdateDestroyAPIVi
 
         # Verifica se os parâmetros estão presentes no request, caso contrário, usa os valores da instância
         aula_dias = request.data.get('aula_dias', instance.aula_dias)
-        aula_hora_inicio = request.data.get('aula_hora_inicio', instance.aula_hora_inicio)
-        aula_hora_fim = request.data.get('aula_hora_fim', instance.aula_hora_fim)
+        try:
+            aula_hora_inicio = request.data.get('aula_hora_inicio')
+            aula_hora_fim = request.data.get('aula_hora_fim')
+            aula_hora_inicio = datetime.datetime.strptime(aula_hora_inicio, '%H:%M').time()
+            aula_hora_fim = datetime.datetime.strptime(aula_hora_fim, '%H:%M').time()
+        except:
+            aula_hora_inicio = instance.aula_hora_inicio
+            aula_hora_fim = instance.aula_hora_fim
         periodo_id = request.data.get('periodo', instance.periodo_id)
         professor_id = request.data.get('professor')
 
