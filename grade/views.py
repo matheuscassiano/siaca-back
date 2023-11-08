@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from autenticacao.models import Aluno
 from coordenacao.models import Disciplina, Periodo
 from gerenciamento_api.serializers import DisciplinaSerializer, MatriculaSerializer, OfertaDisciplinaSerializer, OfertaSerializer, CreateMatriculaSerializer
-from autenticacao.permissions import IsAluno, IsCoordenadorCurso, IsOfertaFromCoordenadorCurso, IsDisciplinaFromCoordenadorCurso, IsProfessor
+from autenticacao.permissions import CanCreateCurso, IsAluno, IsCoordenadorCurso, IsOfertaFromCoordenadorCurso, IsDisciplinaFromCoordenadorCurso, IsProfessor
 from grade.utilities import days_overlap
 from .models import Matricula, Oferta
 from django.db.models import Q
@@ -272,6 +272,23 @@ class MyOfertaListView(generics.ListAPIView):
         if periodo_id:
             return Oferta.objects.filter(periodo__pk=periodo_id, professor=professor)
         return Oferta.objects.filter(professor=professor)
+    
+    def get(self, request, *args, **kwargs):
+        ofertas = self.get_queryset()
+        return Response(OfertaSerializer(ofertas, many=True).data, status=status.HTTP_200_OK)
+
+@permission_classes([IsAuthenticated, CanCreateCurso])
+class CoordOfertaListView(generics.ListAPIView):
+    serializer_class = OfertaSerializer
+
+    def get_queryset(self):
+        coordenador = self.request.user.coordenador
+        curso = coordenador.curso
+        periodo_id = self.request.query_params.get('periodo')
+        disciplinas_id_curso = Disciplina.objects.filter(curso=curso).values_list('id', flat=True)
+        if periodo_id:
+            return Oferta.objects.filter(periodo__pk=periodo_id, disciplina_id__in=disciplinas_id_curso)
+        return Oferta.objects.filter(disciplina_id__in=disciplinas_id_curso)
     
     def get(self, request, *args, **kwargs):
         ofertas = self.get_queryset()
