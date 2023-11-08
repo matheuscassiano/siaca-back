@@ -4,6 +4,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import generics
+from autenticacao.permissions import CanCreateCurso
 from gerenciamento_api.serializers import ChangePasswordSerializer
 
 from django.contrib.auth.decorators import login_required
@@ -102,3 +103,8 @@ class ProfileView(APIView):
         else:
             return Response({'message': 'Tipo de usuário inválido.'}, status=400) # retornar uma mensagem de erro se o tipo de usuário não for válido
         return Response(serializer.data) # retornar os dados serializados como uma resposta
+
+@permission_classes([IsAuthenticated, CanCreateCurso])
+class ProfessorListView(generics.ListAPIView):
+    queryset = Professor.objects.all()
+    serializer_class = ProfessorSerializer
